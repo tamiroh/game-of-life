@@ -1,10 +1,3 @@
-# game-of-life
-
-Quite simple implementation of Conway's Game of Life in PHP.
-
-## Usage
-
-```php
 <?php
 
 require __DIR__ . '/vendor/autoload.php';
@@ -27,4 +20,3 @@ while (true) {
     echo '-----------' . PHP_EOL;
     usleep(200000);
 }
-```

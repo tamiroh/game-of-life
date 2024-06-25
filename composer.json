@@ -1,0 +1,17 @@
+{
+    "name": "tamiroh/game-of-life",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Tamiroh\\GameOfLife\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "tamiroh",
+            "email": "tamiroh71@gmail.com"
+        }
+    ],
+    "require": {}
+}
