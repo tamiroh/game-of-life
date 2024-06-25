@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tamiroh\GameOfLife;
 
 readonly class GameOfLife
 {
     /**
-     * @var list<list<0|1>>
+     * @var list<list<CellState>>
      */
     private array $state;
 
@@ -14,7 +16,13 @@ readonly class GameOfLife
      */
     public function __construct(array $initialState = [[]])
     {
-        $this->state = $initialState;
+        $this->state = array_map(
+            fn (array $row) => array_map(
+                fn (int $cell) => $cell === 1 ? CellState::Alive : CellState::Dead,
+                $row
+            ),
+            $initialState
+        );
     }
 
     public function next(): self
@@ -23,7 +31,10 @@ readonly class GameOfLife
 
         foreach ($this->state as $row => $columns) {
             foreach ($columns as $column => $cell) {
-                $newState[$row][$column] = $this->nextCellState($row, $column);
+                $newState[$row][$column] = match ($this->nextCellState($row, $column)) {
+                    CellState::Alive => 1,
+                    CellState::Dead => 0,
+                };
             }
         }
 
@@ -35,14 +46,14 @@ readonly class GameOfLife
         ob_start();
         foreach ($this->state as $columns) {
             foreach ($columns as $cell) {
-                echo $cell === 1 ? '🟥 ' : '⬜️ ';
+                echo $cell === CellState::Alive ? '🟥 ' : '⬜️ ';
             }
             echo PHP_EOL;
         }
         echo ob_get_clean();
     }
 
-    private function nextCellState(int $row, int $column): int
+    private function nextCellState(int $row, int $column): CellState
     {
         $nearCells = [
             $this->state[$row - 1][$column - 1] ?? null,
@@ -54,19 +65,19 @@ readonly class GameOfLife
             $this->state[$row + 1][$column] ?? null,
             $this->state[$row + 1][$column + 1] ?? null,
         ];
-        $countOfLivings = count(array_filter($nearCells, fn (int|null $v) => $v === 1));
+        $countOfLivings = count(array_filter($nearCells, fn (?CellState $v) => $v === CellState::Alive));
 
-        return $this->state[$row][$column] === 1
+        return $this->state[$row][$column] === CellState::Alive
             ? (
                 match (true) {
-                    $countOfLivings <= 1, $countOfLivings >= 4 => 0,
-                    $countOfLivings >=2 && $countOfLivings <= 3 => 1,
+                    $countOfLivings <= 1, $countOfLivings >= 4 => CellState::Dead,
+                    $countOfLivings >=2 && $countOfLivings <= 3 => CellState::Alive,
                 }
             )
             : (
                 $countOfLivings === 3
-                    ? 1
-                    : 0
+                    ? CellState::Alive
+                    : CellState::Dead
             );
     }
 }
