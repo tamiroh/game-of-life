@@ -13,5 +13,7 @@
             "email": "tamiroh71@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "php": "^8.4"
+    }
 }
