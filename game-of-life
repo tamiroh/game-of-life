@@ -3,6 +3,8 @@
 
 declare(strict_types=1);
 
+use Tamiroh\GameOfLife\CellState;
+
 require __DIR__ . '/vendor/autoload.php';
 
 $gameOfLife = new \Tamiroh\GameOfLife\GameOfLife([
@@ -19,7 +21,17 @@ $gameOfLife = new \Tamiroh\GameOfLife\GameOfLife([
 ]);
 
 while (true) {
-    $gameOfLife->next()->print();
+    $gameOfLife->next();
+
+    ob_start();
+        foreach ($gameOfLife->state as $columns) {
+            foreach ($columns as $cell) {
+                echo $cell === CellState::Alive ? '🟥 ' : '⬜️ ';
+            }
+            echo PHP_EOL;
+        }
+        echo ob_get_clean();
     echo '-----------' . PHP_EOL;
+
     usleep(200000);
 }

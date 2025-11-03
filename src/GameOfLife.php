@@ -9,7 +9,7 @@ final class GameOfLife
     /**
      * @var list<list<CellState>>
      */
-    private array $state;
+    public private(set) array $state;
 
     /**
      * @param list<list<0|1>> $initialState
@@ -30,7 +30,7 @@ final class GameOfLife
         $newState = $this->state;
 
         foreach ($this->state as $row => $columns) {
-            foreach ($columns as $column => $cell) {
+            foreach (array_keys($columns) as $column) {
                 $newState[$row][$column] = $this->nextCellState($row, $column);
             }
         }
@@ -38,18 +38,6 @@ final class GameOfLife
         $this->state = $newState;
 
         return $this;
-    }
-
-    public function print(): void
-    {
-        ob_start();
-        foreach ($this->state as $columns) {
-            foreach ($columns as $cell) {
-                echo $cell === CellState::Alive ? '🟥 ' : '⬜️ ';
-            }
-            echo PHP_EOL;
-        }
-        echo ob_get_clean();
     }
 
     private function nextCellState(int $row, int $column): CellState
