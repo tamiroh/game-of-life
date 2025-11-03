@@ -19,7 +19,7 @@ $gameOfLife = new \Tamiroh\GameOfLife\GameOfLife([
 ]);
 
 while (true) {
-    ($gameOfLife = $gameOfLife->next())->print();
+    $gameOfLife->next()->print();
     echo '-----------' . PHP_EOL;
     usleep(200000);
 }

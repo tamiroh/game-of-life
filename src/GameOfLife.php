@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tamiroh\GameOfLife;
 
-readonly class GameOfLife
+final class GameOfLife
 {
     /**
      * @var list<list<CellState>>
@@ -31,14 +31,13 @@ readonly class GameOfLife
 
         foreach ($this->state as $row => $columns) {
             foreach ($columns as $column => $cell) {
-                $newState[$row][$column] = match ($this->nextCellState($row, $column)) {
-                    CellState::Alive => 1,
-                    CellState::Dead => 0,
-                };
+                $newState[$row][$column] = $this->nextCellState($row, $column);
             }
         }
 
-        return new self($newState);
+        $this->state = $newState;
+
+        return $this;
     }
 
     public function print(): void
