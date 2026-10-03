@@ -4,6 +4,16 @@
 declare(strict_types=1);
 
 use Tamiroh\GameOfLife\CellState;
+use PhpTui\Term\Actions;
+use PhpTui\Term\Event\CharKeyEvent;
+use PhpTui\Term\KeyModifiers;
+use PhpTui\Term\Terminal;
+use PhpTui\Tui\Bridge\PhpTerm\PhpTermBackend;
+use PhpTui\Tui\Canvas\Marker;
+use PhpTui\Tui\Color\AnsiColor;
+use PhpTui\Tui\DisplayBuilder;
+use PhpTui\Tui\Extension\Core\Shape\PointsShape;
+use PhpTui\Tui\Extension\Core\Widget\CanvasWidget;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -20,18 +30,49 @@ $gameOfLife = new \Tamiroh\GameOfLife\GameOfLife([
     [0, 1, 0, 1, 0, 0, 0],
 ]);
 
-while (true) {
-    $gameOfLife->next();
+$terminal = Terminal::new();
 
-    ob_start();
-        foreach ($gameOfLife->state as $columns) {
-            foreach ($columns as $cell) {
-                echo $cell === CellState::Alive ? '🟥 ' : '⬜️ ';
+try {
+    $terminal->enableRawMode();
+    $terminal->execute(Actions::alternateScreenEnable(), Actions::cursorHide());
+    $display = DisplayBuilder::default(PhpTermBackend::new($terminal))->build();
+    $display->clear();
+
+    while (true) {
+        while (null !== $event = $terminal->events()->next()) {
+            if ($event instanceof CharKeyEvent && (
+                $event->char === 'q'
+                || ($event->char === 'c' && ($event->modifiers & KeyModifiers::CONTROL) !== 0)
+            )) {
+                break 2;
             }
-            echo PHP_EOL;
         }
-        echo ob_get_clean();
-    echo '-----------' . PHP_EOL;
 
-    usleep(200000);
+        $gameOfLife->next();
+        $points = [];
+        foreach ($gameOfLife->state as $row => $columns) {
+            foreach ($columns as $column => $cell) {
+                if ($cell === CellState::Alive) {
+                    // Canvas coordinates start at the bottom-left.
+                    $points[] = [(float) $column, (float) (count($gameOfLife->state) - 1 - $row)];
+                }
+            }
+        }
+
+        $display->draw(
+            CanvasWidget::fromIntBounds(
+                0,
+                max(1, count($gameOfLife->state[0]) - 1),
+                0,
+                max(1, count($gameOfLife->state) - 1)
+            )
+                ->marker(Marker::Block)
+                ->draw(PointsShape::new($points, AnsiColor::Red))
+        );
+
+        usleep(200000);
+    }
+} finally {
+    $terminal->execute(Actions::cursorShow(), Actions::alternateScreenDisable());
+    $terminal->disableRawMode();
 }
